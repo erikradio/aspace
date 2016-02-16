@@ -1,0 +1,45 @@
+Aspace API requirements
+
+Resource
+res_obj={'title':'Diary of Cosmo Kramer','level':'collection','linked_agents':[{'role':'creator','ref':'/agents/people/3','relator':'act'}],language':'eng','dates':[{'date_type':'single','begin':'2011','label':'publication'}],'extents':[{'number':'12','portion':'whole','extent_type':'volumes'}],'id_0':'ksrl_44.3_kramer'}
+---
+[{u'lock_version': 0, u'system_mtime': u'2015-11-17T20:59:43Z', u'extents': [{u'lock_version': 0, u'system_mtime': u'2015-11-17T20:59:43Z', 
+
+u'jsonmodel_type': u'extent', u'user_mtime': u'2015-11-17T20:59:43Z', u'number': u'3', u'last_modified_by': u'admin', u'portion': u'whole', u'create_time': u'2015-11-17T20:59:43Z', u'created_by': u'admin', u'extent_type': u'cubic_feet'}], 
+
+u'jsonmodel_type': u'resource', u'instances': [], u'create_time': u'2015-11-17T20:59:43Z', u'publish': True, u'title': u'Collected Papers of Egon Schiele', u'related_accessions': [], u'created_by': u'admin', u'subjects': [], u'deaccessions': [], u'external_documents': [], u'linked_agents': [], u'repository': {u'ref': u'/repositories/2'}, u'user_mtime': u'2015-11-17T20:59:43Z', u'rights_statements': [], u'revision_statements': [], u'linked_events': [], u'external_ids': [], u'suppressed': False, u'restrictions': False, u'dates': [{u'lock_version': 0, u'system_mtime': u'2015-11-17T20:59:43Z', u'begin': u'2015-11-01', u'end': u'2015-11-04', 
+
+u'jsonmodel_type': u'date', u'date_type': u'bulk', u'user_mtime': u'2015-11-17T20:59:43Z', u'last_modified_by': u'admin', u'label': u'creation', u'create_time': u'2015-11-17T20:59:43Z', u'created_by': u'admin', u'calendar': u'gregorian', u'certainty': u'inferred', u'era': u'ce'}], u'classifications': [], u'language': u'cau', u'level': u'file', u'notes': [], u'tree': {u'ref': u'/repositories/2/resources/1/tree'}, u'uri': u'/repositories/2/resources/1', u'last_modified_by': u'admin', u'id_0': u'12345', u'resource_type': u'papers'}]
+
+Digital Object
+digital_object={'title':'Shark Week','digital_object_type':'moving_image','file_versions':[{'file_uri':'www.sharkweek.org'}],'dates':[{'date_type':'single','begin':'2000-10-10','calendar':'gregorian','era':'ce','label':'broadcast'}],'rights_statement':'this work is in the public domain','digital_object_id':'www.handle.com/3333333'}
+---
+{u'lock_version': 1, u'system_mtime': u'2015-11-19T15:58:19Z', u'extents': [{u'lock_version': 0, u'system_mtime': u'2015-11-19T15:58:19Z', u'jsonmodel_type': u'extent', u'user_mtime': u'2015-11-19T15:58:19Z', u'number': u'12', u'last_modified_by': u'admin', u'container_summary': u'12 volumes in one box', u'portion': u'whole', u'create_time': u'2015-11-19T15:58:19Z', u'created_by': u'admin', u'extent_type': u'volumes'}], 
+u'jsonmodel_type': u'digital_object', u'create_time': u'2015-11-19T15:41:58Z', u'publish': True, u'repository': {u'ref': u'/repositories/2'}, u'linked_instances': [], u'title': u'Diary of Cosmo Kramer', u'created_by': u'admin', u'subjects': [], u'external_documents': [], u'linked_agents': [{u'terms': [], u'relator': u'act', u'ref': u'/agents/people/3', u'role': u'creator'}], u'digital_object_type': u'text', u'file_versions': [{u'lock_version': 0, u'system_mtime': u'2015-11-19T15:58:19Z', u'jsonmodel_type': u'file_version', u'file_uri': u'www.kramer.com', u'user_mtime': u'2015-11-19T15:58:19Z', u'last_modified_by': u'admin', u'create_time': u'2015-11-19T15:58:19Z', u'created_by': u'admin', u'use_statement': u'image-service', u'identifier': u'2', u'publish': True}], u'user_mtime': u'2015-11-19T15:58:19Z', u'rights_statements': [], u'linked_events': [], u'external_ids': [], u'suppressed': False, u'restrictions': False, u'dates': [{u'lock_version': 0, u'system_mtime': u'2015-11-19T15:58:19Z', u'begin': u'2015-11-09', u'jsonmodel_type': u'date', u'date_type': u'single', u'user_mtime': u'2015-11-19T15:58:19Z', u'last_modified_by': u'admin', u'label': u'digitized', u'create_time': u'2015-11-19T15:58:19Z', u'created_by': u'admin', u'calendar': u'gregorian', u'era': u'ce'}], u'language': u'fre', u'level': u'image', u'notes': [], u'tree': {u'ref': u'/repositories/2/digital_objects/1/tree'}, u'uri': u'/repositories/2/digital_objects/1', u'last_modified_by': u'admin', u'digital_object_id': u'http://handle.net/123.456'}
+
+Agent/person
+
+{'names':[{'primary_name':'Kramer','rest_of_name':'Cosmo','name_order':'inverted','sort_name':'Kramer,Cosmo','rules':'local'}]}
+---
+{"lock_version":0,"created_by":"admin","last_modified_by":"admin","create_time":"2015-11-17T21:49:32Z","system_mtime":"2015-11-17T21:49:32Z","user_mtime":"2015-11-17T21:49:32Z","jsonmodel_type":"agent_person","agent_contacts":[],"linked_agent_roles":[],"external_documents":[],"rights_statements":[],"notes":[],"dates_of_existence":[],
+
+"names":[{"lock_version":0,"primary_name":"Kramer","rest_of_name":"Cosmo","sort_name":"Kramer, Cosmo","sort_name_auto_generate":true,"created_by":"admin","last_modified_by":"admin","create_time":"2015-11-17T21:49:32Z","system_mtime":"2015-11-17T21:49:32Z","user_mtime":"2015-11-17T21:49:32Z","authorized":true,"is_display_name":true,"rules":"local","name_order":"inverted","jsonmodel_type":"name_person","use_dates":[]}],"related_agents":[],"uri":"/agents/people/3","agent_type":"agent_person","display_name":{"lock_version":0,"primary_name":"Kramer","rest_of_name":"Cosmo","sort_name":"Kramer, Cosmo","sort_name_auto_generate":true,"created_by":"admin","last_modified_by":"admin","create_time":"2015-11-17T21:49:32Z","system_mtime":"2015-11-17T21:49:32Z","user_mtime":"2015-11-17T21:49:32Z","authorized":true,"is_display_name":true,"rules":"local","name_order":"inverted","jsonmodel_type":"name_person","use_dates":[]},"title":"Kramer, Cosmo","is_linked_to_published_record":false}
+***
+{"lock_version":0,"publish":true,"created_by":"admin","last_modified_by":"admin","create_time":"2015-11-17T20:52:00Z","system_mtime":"2015-11-17T20:52:00Z","user_mtime":"2015-11-17T20:52:00Z","jsonmodel_type":"agent_person","agent_contacts":[],"linked_agent_roles":[],"external_documents":[],"rights_statements":[],"notes":[],"dates_of_existence":[],"names":[{"lock_version":0,"primary_name":"Schiele","rest_of_name":"Egon","sort_name":"Schiele, Egon","sort_name_auto_generate":true,"created_by":"admin","last_modified_by":"admin","create_time":"2015-11-17T20:52:00Z","system_mtime":"2015-11-17T20:52:00Z","user_mtime":"2015-11-17T20:52:00Z","authorized":true,"is_display_name":true,"source":"ulan","name_order":"inverted","jsonmodel_type":"name_person","use_dates":[],"authority_id":"500002633"}],"related_agents":[],"uri":"/agents/people/2","agent_type":"agent_person","display_name":{"lock_version":0,"primary_name":"Schiele","rest_of_name":"Egon","sort_name":"Schiele, Egon","sort_name_auto_generate":true,"created_by":"admin","last_modified_by":"admin","create_time":"2015-11-17T20:52:00Z","system_mtime":"2015-11-17T20:52:00Z","user_mtime":"2015-11-17T20:52:00Z","authorized":true,"is_display_name":true,"source":"ulan","name_order":"inverted","jsonmodel_type":"name_person","use_dates":[],"authority_id":"500002633"},"title":"Schiele, Egon","is_linked_to_published_record":false}
+
+Subjects
+subject={'terms':[{'term':'Great Pyramid (Egypt)','vocabulary':'/vocabularies/1','term_type':'geographic'}],'vocabulary':'/vocabularies/1','title':'Great Pyramid (Egypt)','authority_id':'http://id.loc.gov/authorities/subjects/sh85057002',
+'source':'lcsh'}
+---
+[{u'lock_version': 0, u'system_mtime': u'2015-11-19T18:54:46Z', 
+u'terms': [{u'lock_version': 0, u'system_mtime': u'2015-11-19T18:54:46Z', u'term': u'Photography of miracles', u'vocabulary': u'/vocabularies/1', u'jsonmodel_type': u'term', u'user_mtime': u'2015-11-19T18:54:46Z', u'uri': u'/terms/3', u'last_modified_by': u'admin', u'create_time': u'2015-11-19T18:54:46Z', u'created_by': u'admin', u'term_type': u'topical'}], 
+
+u'vocabulary': u'/vocabularies/1', u'jsonmodel_type': u'subject', u'title': u'Photography of miracles', u'external_documents': [], u'user_mtime': u'2015-11-19T18:54:46Z', u'authority_id': u'http://id.loc.gov/authorities/subjects/sh95010756', u'last_modified_by': u'admin', u'uri': u'/subjects/3', u'source': u'lcsh', u'create_time': u'2015-11-19T18:54:46Z', u'created_by': u'admin', u'is_linked_to_published_record': False, u'external_ids': [], u'publish': True}]
+
+
+
+to start
+
+sudo /archivesspace/archivesspace.sh start
+
+

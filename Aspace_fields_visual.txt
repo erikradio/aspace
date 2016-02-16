@@ -1,0 +1,61 @@
+Aspace Required Fields
+
+#Resource
+
+title*
+id_0*
+level* (box,class,collection,file,fonds,item,other level,record group,series,sub-fonds,sub-group,sub-series)
+lang* [code]
+dates*
+	date_type (single,bulk dates,inclusive dates)
+	begin
+	end [if not single]
+	calendar (gregorian)
+	era (ce)
+	label (Agent relation,creation,broadcast,copyright,deaccession,digitized,event,existence,issued,modified,other,publication,usage,record keeping)
+extents*
+	number
+	portion (part,whole)
+	extent_type
+repository*
+linked_agents
+	role
+	ref
+	relator
+rights_statement
+
+
+——
+
+#Digital Object
+
+title*
+digital_object_type*
+file_versions*
+	file_uri
+	identifier (within Aspace)
+digital_object_id*
+dates*
+	date_type (single,bulk dates,inclusive dates)
+	begin
+	end [if not single]
+	calendar (gregorian)
+	era (ce)
+	label (Agent relation,creation,broadcast,copyright,deaccession,digitized,event,existence,issued,modified,other,publication,usage,record keeping)
+linked_agents
+	role
+	ref
+	relator
+rights_statement
+
+—
+
+#Agent/person
+
+names*
+	primary_name*
+	rest_of_name*
+	name_order (inverted, direct—usually do inverted)*
+	rules (local,AACR2,DACS,RDA)
+	source
+	authority_id
