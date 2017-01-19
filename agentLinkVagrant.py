@@ -1,4 +1,5 @@
 import requests, json,csv,uuid,re,sys
+from json import dumps
 from jsonpatch import JsonPatch
 from re import match
 
@@ -17,17 +18,24 @@ class Agent:
         self.uri = uri
         self.linked_accessions = []
 
+    def __repr__(self):
+        return dumps(
+            {'name': self.name, 'uri':self.uri,
+             'linked_accessions': self.linked_accessions},
+            indent=4
+        )
+
 
 def get_agents_from_api():
     # Actually implement something here
     def get_people_agents():
-        agent=requests.get(aspace_url+"/agents/people?all_ids=true").json()
-	    agentList=[x for x in agent]
+        agents=requests.get(aspace_url+"/agents/people?all_ids=true").json()
+        agentList=[x for x in agents]
         for agent in agentList:
             agentData=requests.get(aspace_url+"/agents/people/"+str(agent),headers=headers).json()
             name=agentData['display_name']['sort_name']
-            nameID=agentData['uri']
-        return name,nameID
+            uri=agentData['uri']
+            yield name,uri
 
     def get_corp_agents():
         corp=requests.get(aspace_url+"/agents/corporate_entities?all_ids=true").json()
@@ -35,8 +43,8 @@ def get_agents_from_api():
         for corp in corpList:
             corpData=requests.get(aspace_url+"/agents/corporate_entities/"+str(corp),headers=headers).json()
             name=corpData['display_name']['sort_name']
-            nameID=corpData['uri']
-        return name,nameID
+            uri=corpData['uri']
+            yield name,uri
 
 
     agents = []
@@ -47,51 +55,66 @@ def get_agents_from_api():
     for name,uri in get_corp_agents():
         agent = Agent(name, uri)
         agents.append(agent)
-
+    # print(agents)
     return agents
 
 
 def read_csv(path):
     rows = []
     with open(path) as f:
-        reader = DictReader(f)
+        reader = csv.DictReader(f)
         for x in reader:
             rows.append(x)
     return rows
 
-# updateAcc=requests.get(aspace_url+accURL,headers=headers).json()
-#
-# addAgentURL=JsonPatch([{"op": "add", "path":"/linked_agents", "value":[{"ref":agentURI,"role":"source","relator":"dnr"}]}])
-#
-# applyPatch=addAgentURL.apply(updateAcc,in_place=True)
-# newAcc=requests.post(aspace_url+accURL,headers=headers,data=json.dumps(applyPatch)).json()
-
 
 def update_accession(accession, agent):
-    updateAcc = requests.get(aspace_url+accIDs,headers=headers).json()
-    addAgentURL = JsonPatch([{"op": "add", "path":"/linked_agents", "value":[{"ref":agent.uri,"role":"source","relator":"dnr"}]}])
-    applyPatch = addAgentURL.apply(updateAcc,in_place=True)
-    newAcc = requests.post(aspace_url+"{}".format(accession),
-                  data=applyPatch,headers=headers).json()
+    print(accession)
 
+    updateAcc = requests.get(aspace_url+accession,headers=headers).json()
+    addAgentURL = JsonPatch([{"op": "add", "path":"/linked_agents", "value":[{"ref":agent.uri,"role":"source","relator":"dnr"}]}])
+    # print(addAgentURL)
+    applyPatch = addAgentURL.apply(updateAcc,in_place=True)
+    # IM ADDING A DEBUGGING PRINT HERE AND COMMENTING YOUR ACTUAL POST
+    print(applyPatch)
+    newAcc = requests.post(aspace_url+accession,data=applyPatch,headers=headers).json()
+    # print(newAcc)
 
 def main():
     path = sys.argv[1]
     agents = get_agents_from_api()
-    csv_data = read_csv(csvpath)
-    #get accession ids
-    acc = requests.get(aspace_url+"/repositories/2/accessions?all_ids=true",headers=headers).json()
-	accIDs=[x for x in acc]
-    for x in accIDs:
-        accession=x['uri']
-    return accession
 
+    #get accession ids
+    accs = requests.get(aspace_url+"/repositories/2/accessions?all_ids=true",headers=headers).json()
+    # Map accession numbers to accession URIs
+    # You will need to reference this mapping later in your posts, or else you
+    # will add a bunch of wrong identifiers
+    # print(accs)
+    accIDs=[x for x in accs]
+    acc_mapping = {}
+    for key in accIDs:
+        accData=requests.get(aspace_url+"/repositories/2/accessions/"+str(key),headers=headers).json()
+        id_0=accData['id_0']
+        uri=accData['uri']
+        acc_mapping[id_0]=uri
+        # print(acc_mapping)
+
+    csv_data = read_csv(path)
     for x in csv_data:
         # your logic may be more complicated here, so you may want to function
         # it out or not use a list comprehension, this is for example purposes
         # only
-        agent = [x for x in agents if agents.name == x['DonorLname']+x['DonorFname']
-        agent.linked_accessions.append(x['acc_id'])
+        # print(x['Donor_last_name/Organization']+x['Donor_first_name'])
+        if len(x['Donor_last_name/Organization']) > 0:
+            agent = [y for y in agents if y.name == x['Donor_last_name/Organization']+', '+x['Donor_first_name']][0]
+            agent.linked_accessions.append(x['Accession_Number'])
+        if len(x['Donor-corporate']) > 0:
+            agent = [y for y in agents if y.name == x['Donor-corporate']][0]
+            agent.linked_accessions.append(x['Accession_Number'])
+
     for agent in agents:
         for linked_accession in agent.linked_accessions:
-            update_accession(linked_accession, agent)
+            update_accession(acc_mapping[linked_accession], agent)
+
+if __name__ == '__main__':
+    main()
