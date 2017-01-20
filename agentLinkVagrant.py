@@ -69,15 +69,16 @@ def read_csv(path):
 
 
 def update_accession(accession, agent):
-    print(accession)
+    # print(aspace_url+accession)
 
     updateAcc = requests.get(aspace_url+accession,headers=headers).json()
-    addAgentURL = JsonPatch([{"op": "add", "path":"/linked_agents", "value":[{"ref":agent.uri,"role":"source","relator":"dnr"}]}])
+    # print(updateAcc)
+    addAgentURL = JsonPatch([{"op": "replace", "path":"/linked_agents", "value":[{"ref":agent.uri,"role":"source","relator":"dnr"}]}])
     # print(addAgentURL)
     applyPatch = addAgentURL.apply(updateAcc,in_place=True)
-    # IM ADDING A DEBUGGING PRINT HERE AND COMMENTING YOUR ACTUAL POST
-    print(applyPatch)
-    newAcc = requests.post(aspace_url+accession,data=applyPatch,headers=headers).json()
+    
+    # print(applyPatch)
+    newAcc = requests.post(aspace_url+accession,data=json.dumps(applyPatch),headers=headers).json()
     # print(newAcc)
 
 def main():
@@ -101,10 +102,7 @@ def main():
 
     csv_data = read_csv(path)
     for x in csv_data:
-        # your logic may be more complicated here, so you may want to function
-        # it out or not use a list comprehension, this is for example purposes
-        # only
-        # print(x['Donor_last_name/Organization']+x['Donor_first_name'])
+        
         if len(x['Donor_last_name/Organization']) > 0:
             agent = [y for y in agents if y.name == x['Donor_last_name/Organization']+', '+x['Donor_first_name']][0]
             agent.linked_accessions.append(x['Accession_Number'])
