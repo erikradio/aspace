@@ -3,6 +3,7 @@ from json import dumps
 from jsonpatch import JsonPatch
 from re import match
 
+#this script links agents/donors to accession records
 
 aspace_url = "http://localhost:8089"
 username= "admin"
