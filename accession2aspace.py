@@ -21,7 +21,7 @@ with open("accTestBatch.csv","rU") as csvFile:
 		title = row['Collection_Title']
 
 		CorpDonor = row['Donor-corporate']
-		DonorLname = row['Donor_last_name/Organization']
+		DonorLname = row['Donor_last_name']
 		DonorFname = ['Donor_first_name	']
 		AccDate = row['Accession_date']
 		AccNo = row['Accession_Number']
