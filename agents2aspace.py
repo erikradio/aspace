@@ -20,7 +20,7 @@ with open("accTestBatch.csv","rU") as csvFile:
 	for row in reader:
 
 		CorpDonor = row['Donor-corporate']
-		DonorLname = row['Donor_last_name/Organization']
+		DonorLname = row['Donor_last_name']
 		DonorFname = row['Donor_first_name']
 
 		agents=requests.get(aspace_url+"/agents/people?id_set=52",headers=headers).json()
