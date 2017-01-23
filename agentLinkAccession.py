@@ -105,7 +105,7 @@ def main():
     for x in csv_data:
         
         if len(x['Donor_last_name/Organization']) > 0:
-            agent = [y for y in agents if y.name == x['Donor_last_name/Organization']+', '+x['Donor_first_name']][0]
+            agent = [y for y in agents if y.name == x['Donor_last_name']+', '+x['Donor_first_name']][0]
             agent.linked_accessions.append(x['Accession_Number'])
         if len(x['Donor-corporate']) > 0:
             agent = [y for y in agents if y.name == x['Donor-corporate']][0]
