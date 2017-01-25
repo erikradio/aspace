@@ -3,8 +3,8 @@ from jsonpatch import JsonPatch
 from re import match
 
 aspace_url = "http://archivesspacedev.library.arizona.edu:8089"
-username= "admin"
-password = "admin"
+username= "radio"
+password = "B5rds-on-mind6"
 
 #this script creates agents in aspace
 
@@ -15,10 +15,11 @@ headers = {"X-ArchivesSpace-Session":session}
 
 # print(headers)
 
-with open("accTestBatch.csv","rU") as csvFile:
+with open("final_accession.csv","rU") as csvFile:
 	reader=csv.DictReader(csvFile)
 	for row in reader:
 
+		DonorFamily = row['Donor-family']
 		CorpDonor = row['Donor-corporate']
 		DonorLname = row['Donor_last_name']
 		DonorFname = row['Donor_first_name']
@@ -33,4 +34,9 @@ with open("accTestBatch.csv","rU") as csvFile:
 		if len(CorpDonor)>0:
 			agent_record={"jsonmodel_type":"agent_corporate_entity","title":CorpDonor,"names":[{"is_display_name":True,"sort_name_auto_generate":True,"rules":"local","jsonmodel_type":"name_corporate_entity","primary_name":CorpDonor,"name_order":"inverted"}]}
 			agent_post=requests.post(aspace_url+"/agents/corporate_entities",headers=headers,data=json.dumps(agent_record)).json()
+			print(agent_post)
+		if len(DonorFamily)>0:
+			agent_record={"jsonmodel_type":"agent_family","title":DonorFamily,
+			"names":[{"is_display_name":True,"sort_name_auto_generate":False,"sort_name":DonorFamily,"rules":"local","jsonmodel_type":"name_family","family_name":DonorFamily,"name_order":"direct"}]}
+			agent_post=requests.post(aspace_url+"/agents/families",headers=headers,data=json.dumps(agent_record)).json()
 			print(agent_post)
