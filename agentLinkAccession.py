@@ -5,7 +5,7 @@ from re import match
 
 #this script links agents/donors to accession records
 
-aspace_url = "http://localhost:8089"
+aspace_url = "localhost:8089"
 username= "admin"
 password = "admin"
 auth = requests.post(aspace_url+"/users/"+username+"/login?password="+password).json()
@@ -77,10 +77,10 @@ def update_accession(accession, agent):
     addAgentURL = JsonPatch([{"op": "replace", "path":"/linked_agents", "value":[{"ref":agent.uri,"role":"source","relator":"dnr"}]}])
     # print(addAgentURL)
     applyPatch = addAgentURL.apply(updateAcc,in_place=True)
-    
+
     # print(applyPatch)
     newAcc = requests.post(aspace_url+accession,data=json.dumps(applyPatch),headers=headers).json()
-    # print(newAcc)
+    print(newAcc)
 
 def main():
     path = sys.argv[1]
@@ -103,10 +103,21 @@ def main():
 
     csv_data = read_csv(path)
     for x in csv_data:
-        
-        if len(x['Donor_last_name/Organization']) > 0:
-            agent = [y for y in agents if y.name == x['Donor_last_name']+', '+x['Donor_first_name']][0]
-            agent.linked_accessions.append(x['Accession_Number'])
+
+        # if len(x['Donor_last_name']) > 0:
+        #
+        #
+        #     potential_agent_list = [y for y in agents if y.name == x['Donor_last_name']+', '+x['Donor_first_name']]
+        #     # print(potential_agent_list)
+        #     if len(potential_agent_list) != 1:
+        #         if len(potential_agent_list) > 1:
+        #             raise ValueError("We found too many agents. Offending search term: {}, {}".format(x['Donor_last_name'], x['Donor_first_name']))
+        #         if len(potential_agent_list) < 1:
+        #             raise ValueError("We found too few agents. Offending search term: {}, {}".format(x['Donor_last_name'], x['Donor_first_name']))
+        #     else:
+        #         agent = potential_agent_list[0]
+        #     agent.linked_accessions.append(x['Accession_Number'])
+        #     print(agent)
         if len(x['Donor-corporate']) > 0:
             agent = [y for y in agents if y.name == x['Donor-corporate']][0]
             agent.linked_accessions.append(x['Accession_Number'])
