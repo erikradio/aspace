@@ -4,7 +4,7 @@ from re import match
 
 aspace_url = "http://archivesspacedev.library.arizona.edu:8089"
 username= "radio"
-password = "B5rds-on-mind6"
+password = ""
 
 #this script creates agents in aspace
 
