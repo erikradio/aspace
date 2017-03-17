@@ -19,9 +19,10 @@ with open("final_accession.csv","rU") as csvFile:
 	reader=csv.DictReader(csvFile)
 	for row in reader:
 		title = row['Collection_Title']
-		CorpDonor = row['Donor-corporate']
-		DonorLname = row['Donor_last_name']
-		DonorFname = ['Donor_first_name	']
+		CorpDonor = row['Donor_corporate']
+		DonorLname = row['Donor_lname']
+		DonorFname = ['Donor_fname']
+		DonorFamily = ['Donor_family']
 		AccDate = row['Accession_date']
 		AccNo = row['Accession_Number']
 		Size = row['Size']
