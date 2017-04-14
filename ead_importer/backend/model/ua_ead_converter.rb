@@ -11,7 +11,7 @@ class UAEADConverter < EADConverter
 
 
   def self.instance_for(type, input_file)
-    if type == "UA_ead_xml"
+    if type == "ua_ead_xml"
       self.new(input_file)
     else
       nil
@@ -32,28 +32,28 @@ class UAEADConverter < EADConverter
 # BEGIN UNITID CUSTOMIZATIONS
 # Let's take those brackets off of unitids and just add them in the exporter
 
-    with 'unitid' do |node|
-      ancestor(:note_multipart, :resource, :archival_object) do |obj|
-        case obj.class.record_type
-        when 'resource'
-          # inner_xml.split(/[\/_\-\.\s]/).each_with_index do |id, i|
-          #   set receiver, "id_#{i}".to_sym, id
-          # end
-          set obj, :id_0, inner_xml
-        when 'archival_object'
-          set obj, :component_id, inner_xml.gsub("[","").gsub("]","").strip
-        end
-      end
-    end
+    # with 'unitid' do |node|
+    #   ancestor(:note_multipart, :resource, :archival_object) do |obj|
+    #     case obj.class.record_type
+    #     when 'resource'
+    #       # inner_xml.split(/[\/_\-\.\s]/).each_with_index do |id, i|
+    #       #   set receiver, "id_#{i}".to_sym, id
+    #       # end
+    #       set obj, :id_0, inner_xml
+    #     when 'archival_object'
+    #       set obj, :component_id, inner_xml.gsub("[","").gsub("]","").strip
+    #     end
+    #   end
+    # end
 
     # this is another little hack for legacy MARC records. There are a few dozen collections that have multiple call numbers
     # e.g., one MARC record corresponds to the "Aa 1" portion of a collection that is in a small folder, that has a top container and
     # a location listed in BEAL and another MARC corresponds to the "UAs" portion of a collection, which is located based on its call number,
     # not listed in BEAL. These will require special attention for top containering, barcoding, and exporting to EAD, so we'll just add a second
     # identifier for now, which contains all of the various call numbers corresponding to a single collection id
-    with 'unitid2' do
-      set :id_1, inner_xml.strip
-    end
+    # with 'unitid2' do
+    #   set :id_1, inner_xml.strip
+    # end
 
 # BEGIN TITLEPROPER AND AUTHOR CUSTOMIZATIONS
 
@@ -62,41 +62,93 @@ class UAEADConverter < EADConverter
 # We want to use the titlepage statements. Changing this to be more explicit about using the statement that we want, and to remove some unwanted linebreaks.
 
 # The EAD importer ignores titlepage; we need to unignore it
-    with "titlepage" do
-      @ignore = false
-    end
+    # with "titlestmt/titleproper" do
+    #   @ignore = false
+    # end
 
-    with 'titlepage/titleproper' do
-      type = att('type')
-      title_statement = inner_xml.gsub("<lb/>"," <lb/>")
-      case type
-      when 'filing'
-        set :finding_aid_filing_title, title_statement.gsub("<lb/>","").gsub(/<date(.*?)<\/date>/,"").gsub(/\s+/," ").strip
-      else
-        set :finding_aid_title, title_statement.gsub("<lb/>","").gsub(/<date(.*?)<\/date>/,"").gsub(/\s+/," ").gsub(/[,\s]+$/,"").strip
+    # with 'titleproper' do |node|
+    #   ancestor(:resource, :archival_object) do |obj|
+    #     obj.title = node.inner_xml.strip.sub(/<date[^>]*>[^<]*<\/date>/, '').gsub(/<date\/>/, '').gsub(/[^:;]\s?<lb\s?\/>/, "; ").gsub(/([:;])\s?<lb\s?\/>/, '\1 ')
+    #   end
+    # end
+
+    with 'titleproper/date' do |*|
+      set :finding_aid_date, inner_xml
+
+      norm_dates = (att('normal') || "").sub(/^\s/, '').sub(/\s$/, '').split('/')
+      if norm_dates.length == 1
+        norm_dates[1] = norm_dates[0]
+      end
+      norm_dates.map! {|d| d =~ /^([0-9]{4}(\-(1[0-2]|0[1-9])(\-(0[1-9]|[12][0-9]|3[01]))?)?)$/ ? d : nil}
+
+      make :date, {
+        :date_type => att('type') || 'inclusive',
+        :expression => inner_xml,
+        :label => att('label') || 'creation',
+        :begin => norm_dates[0],
+        :end => norm_dates[1],
+        :calendar => att('calendar'),
+        :era => att('era'),
+        :certainty => att('certainty')
+      } do |date|
+        set ancestor(:resource, :archival_object), :dates, date
       end
     end
 
-    with 'titlepage/author' do
-      author_statement = inner_xml.gsub("<lb/>"," <lb/>")
-      set :finding_aid_author, author_statement.gsub("<lb/>","").gsub(/\s+/," ").strip
-    end
+    #   norm_dates = (att('normal') || "").sub(/^\s/, '').sub(/\s$/, '').split('/')
+    #   # why were the next 3 lines added?  removed for now, since single dates can stand on their own.
+    #   #if norm_dates.length == 1
+    #   #  norm_dates[1] = norm_dates[0]
+    #   #end
+    #   norm_dates.map! {|d| d =~ /^([0-9]{4}(\-(1[0-2]|0[1-9])(\-(0[1-9]|[12][0-9]|3[01]))?)?)$/ ? d : nil}
+    #
+    #   norm_dates = (att('normal') || "").sub(/^\s/, '').sub(/\s$/, '').split('/')
+    #   if norm_dates.length == 1
+    #     norm_dates[1] = norm_dates[0]
+    #   end
+    #   norm_dates.map! {|d| d =~ /^([0-9]{4}(\-(1[0-2]|0[1-9])(\-(0[1-9]|[12][0-9]|3[01]))?)?)$/ ? d : nil}
+    #
+    #   make :date, {
+    #     :date_type => att('type') || 'inclusive',
+    #     :expression => inner_xml,
+    #     :label => att('label') || 'creation',
+    #     :begin => norm_dates[0],
+    #     :end => norm_dates[1],
+    #     :calendar => att('calendar'),
+    #     :era => att('era'),
+    #     :certainty => att('certainty')
+    #   } do |date|
+    #     set ancestor(:resource, :archival_object), :dates, date
+    #   end
+    # end
+
+
+    # with 'titlestmt/author' do
+    #   author_statement = inner_xml.gsub("<lb/>"," <lb/>")
+    #   set :finding_aid_author, author_statement.gsub("<lb/>","").gsub(/\s+/," ").strip
+    # end
+
+
 
 # Skip the titleproper and author statements from titlestmt
-    with 'titlestmt/titleproper' do
-      next
-    end
+    # with 'titlestmt/titleproper' do
+      # next
+    # end
 
-    with 'titlestmt/author' do
-      next
-    end
+    # with 'titlestmt/author' do
+    #   next
+    # end
 
 # Skip these to override the default ArchiveSpace functionality, which searches for a titleproper or an author anywhere
-    with 'titleproper' do
-      next
-    end
+    # with 'titleproper' do
+    #   next
+    # end
+    #
+    # with 'author' do
+    #   next
+    # end
 
-    with 'author' do
+    with 'unitdate' do
       next
     end
 
