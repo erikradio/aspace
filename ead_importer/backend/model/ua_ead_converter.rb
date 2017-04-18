@@ -72,6 +72,16 @@ class UAEADConverter < EADConverter
     #   end
     # end
 
+    with 'titleproper' do |node.text|
+      type = att('type')
+      case type
+      when 'filing'
+        set :finding_aid_filing_title, format_content( inner_xml )
+      else
+        set :finding_aid_title, format_content( inner_xml )
+      end
+    end
+
     with 'titleproper/date' do |*|
       set :finding_aid_date, inner_xml
 
@@ -94,6 +104,8 @@ class UAEADConverter < EADConverter
         set ancestor(:resource, :archival_object), :dates, date
       end
     end
+
+
 
     #   norm_dates = (att('normal') || "").sub(/^\s/, '').sub(/\s$/, '').split('/')
     #   # why were the next 3 lines added?  removed for now, since single dates can stand on their own.
@@ -494,255 +506,255 @@ class UAEADConverter < EADConverter
 # around the individual terms in a corpname, persname, or famname. This modification will also make sure that those terms
 # get imported properly.
 
-    {
-      'function' => 'function',
-      'genreform' => 'genre_form',
-      'geogname' => 'geographic',
-      'occupation' => 'occupation',
-      'subject' => 'topical',
-      'title' => 'uniform_title' # added title since we have some <title> tags in our controlaccesses
-      }.each do |tag, type|
-        with "controlaccess/#{tag}" do
-          if att('ref')
-            set ancestor(:resource, :archival_object), :subjects, {'ref' => att('ref')}
-          else
-            make :subject, {
-                :terms => {'term' => inner_xml, 'term_type' => type, 'vocabulary' => '/vocabularies/1'},
-                :vocabulary => '/vocabularies/1',
-                :source => att('source') || 'ingest'
-              } do |subject|
-                set ancestor(:resource, :archival_object), :subjects, {'ref' => subject.uri}
-                end
-           end
-        end
-     end
-
-    with 'origination/corpname' do
-        if att('ref')
-            set ancestor(:resource, :archival_object), :linked_agents, {'ref' => att('ref'), 'role' => 'creator'}
-        else
-            make_corp_template(:role => 'creator')
-        end
-    end
-
-    with 'controlaccess/corpname' do
-        corpname = Nokogiri::XML::DocumentFragment.parse(inner_xml)
-        terms ||= []
-        corpname.children.each do |child|
-            if child.respond_to?(:name) && child.name == 'term'
-                term = child.content.strip
-                term_type = child['type']
-                terms << {'term' => term, 'term_type' => term_type, 'vocabulary' => '/vocabularies/1'}
-            end
-        end
-
-        if att('role')
-            relator = att('role')
-        elsif att('encodinganalog') == '710'
-            relator = 'ctb'
-        else
-            relator = nil
-        end
-
-        if att('ref')
-            set ancestor(:resource, :archival_object), :linked_agents, {'ref' => att('ref'), 'role' => 'subject', 'terms' => terms, 'relator' => relator}
-        else
-            make_corp_template(:role => 'subject')
-        end
-    end
-
-    with 'origination/famname' do
-        if att('ref')
-            set ancestor(:resource, :archival_object), :linked_agents, {'ref' => att('ref'), 'role' => 'creator'}
-        else
-            make_family_template(:role => 'creator')
-        end
-    end
-
-    with 'controlaccess/famname' do
-        famname = Nokogiri::XML::DocumentFragment.parse(inner_xml)
-        terms ||= []
-        famname.children.each do |child|
-            if child.respond_to?(:name) && child.name == 'term'
-                term = child.content.strip
-                term_type = child['type']
-                terms << {'term' => term, 'term_type' => term_type, 'vocabulary' => '/vocabularies/1'}
-            end
-        end
-
-        if att('role')
-            relator = att('role')
-        elsif att('encodinganalog') == '700'
-            relator = 'ctb'
-        else
-            relator = nil
-        end
-
-        if att('ref')
-            set ancestor(:resource, :archival_object), :linked_agents, {'ref' => att('ref'), 'role' => 'subject', 'terms' => terms, 'relator' => relator}
-        else
-            make_family_template(:role => 'subject')
-        end
-    end
-
-    with 'origination/persname' do
-        if att('ref')
-            set ancestor(:resource, :archival_object), :linked_agents, {'ref' => att('ref'), 'role' => 'creator'}
-        else
-            make_person_template(:role => 'creator')
-        end
-    end
-
-    with 'controlaccess/persname' do
-        persname = Nokogiri::XML::DocumentFragment.parse(inner_xml)
-        terms ||= []
-        persname.children.each do |child|
-            if child.respond_to?(:name) && child.name == 'term'
-                term = child.content.strip
-                term_type = child['type']
-                terms << {'term' => term, 'term_type' => term_type, 'vocabulary' => '/vocabularies/1'}
-            end
-        end
-
-        if att('role')
-            relator = att('role')
-        elsif att('encodinganalog') == '700'
-            relator = 'ctb'
-        else
-            relator = nil
-        end
-
-        if att('ref')
-            set ancestor(:resource, :archival_object), :linked_agents, {'ref' => att('ref'), 'role' => 'subject', 'terms' => terms, 'relator' => relator}
-        else
-            make_person_template(:role => 'subject')
-        end
-    end
-
-# END CUSTOM SUBJECT AND AGENT IMPORTS
-
-
-# BEGIN PHYSDESC CUSTOMIZATIONS
-
-# The stock EAD importer doesn't import <physfacet> and <dimensions> tags into extent objects; instead making them notes
-# This is a corrected version
-
-# first, some methods for generating note objects
-
-def make_single_note(note_name, tag, tag_name="")
-  content = tag.inner_text
-  if !tag_name.empty?
-    content = tag_name + ": " + content
-  end
-  make :note_singlepart, {
-    :type => note_name,
-    :persistent_id => att('id'),
-    :publish => true,
-    :content => format_content( content.sub(/<head>.?<\/head>/, '').strip)
-  } do |note|
-    set ancestor(:resource, :archival_object), :notes, note
-  end
-end
-
-def make_nested_note(note_name, tag)
-  content = tag.inner_text
-
-  make :note_multipart, {
-    :type => note_name,
-    :persistent_id => att('id'),
-    :publish => true,
-    :subnotes => {
-      'jsonmodel_type' => 'note_text',
-      'content' => format_content( content )
-    }
-  } do |note|
-    set ancestor(:resource, :archival_object), :notes, note
-  end
-end
-
-with 'physdesc' do
-  next if context == :note_orderedlist # skip these
-  physdesc = Nokogiri::XML::DocumentFragment.parse(inner_xml)
-
-  extent_number_and_type = nil
-
-  dimensions = []
-  physfacets = []
-  container_summaries = []
-  other_extent_data = []
-
-  container_summary_texts = []
-  dimensions_texts = []
-  physfacet_texts = []
-
-  # If there is already a portion specified, use it
-  portion = att('altrender') || 'whole'
-
-      # Special case: if the physdesc is just a plain string with no child elements, treat its contents as a physdesc note
-  if physdesc.children.length == 1 && physdesc.children[0].name == 'text'
-        container_summaries << physdesc
-  else
-      # Otherwise, attempt to parse out an extent record from the child elements.
-    physdesc.children.each do |child|
-      # "extent" can have one of two kinds of semantic meanings: either a true extent with number and type,
-      # or a container summary. Disambiguation is done through a regex.
-      if child.name == 'extent'
-        child_content = child.content.strip
-        if extent_number_and_type.nil? && child_content =~ /^([0-9\.]+)+\s+(.*)$/
-          extent_number_and_type = {:number => $1, :extent_type => $2}
-        else
-          container_summaries << child
-          container_summary_texts << child.content.strip
-        end
-
-      elsif child.name == 'physfacet'
-        physfacets << child
-        physfacet_texts << child.content.strip
-
-      elsif child.name == 'dimensions'
-        dimensions << child
-        dimensions_texts << child.content.strip
-
-      elsif child.name != 'text'
-        other_extent_data << child
-      end
-    end
-  end
-
-  # only make an extent if we got a number and type, otherwise put all physdesc contents into a note
-  if extent_number_and_type
-    make :extent, {
-      :number => $1,
-      :extent_type => $2,
-      :portion => portion,
-      :container_summary => container_summary_texts.join('; '),
-      :physical_details => physfacet_texts.join('; '),
-      :dimensions => dimensions_texts.join('; ')
-    } do |extent|
-      set ancestor(:resource, :archival_object), :extents, extent
-    end
-
-  # there's no true extent; split up the rest into individual notes
-  else
-    container_summaries.each do |summary|
-      make_single_note("physdesc", summary)
-    end
-
-    physfacets.each do |physfacet|
-      make_single_note("physfacet", physfacet)
-    end
-    #
-    dimensions.each do |dimension|
-      make_nested_note("dimensions", dimension)
-    end
-  end
-
-  other_extent_data.each do |unknown_tag|
-    make_single_note("physdesc", unknown_tag, unknown_tag.name)
-  end
-
-end
-
+#     {
+#       'function' => 'function',
+#       'genreform' => 'genre_form',
+#       'geogname' => 'geographic',
+#       'occupation' => 'occupation',
+#       'subject' => 'topical',
+#       'title' => 'uniform_title' # added title since we have some <title> tags in our controlaccesses
+#       }.each do |tag, type|
+#         with "controlaccess/#{tag}" do
+#           if att('ref')
+#             set ancestor(:resource, :archival_object), :subjects, {'ref' => att('ref')}
+#           else
+#             make :subject, {
+#                 :terms => {'term' => inner_xml, 'term_type' => type, 'vocabulary' => '/vocabularies/1'},
+#                 :vocabulary => '/vocabularies/1',
+#                 :source => att('source') || 'ingest'
+#               } do |subject|
+#                 set ancestor(:resource, :archival_object), :subjects, {'ref' => subject.uri}
+#                 end
+#            end
+#         end
+#      end
+#
+#     with 'origination/corpname' do
+#         if att('ref')
+#             set ancestor(:resource, :archival_object), :linked_agents, {'ref' => att('ref'), 'role' => 'creator'}
+#         else
+#             make_corp_template(:role => 'creator')
+#         end
+#     end
+#
+#     with 'controlaccess/corpname' do
+#         corpname = Nokogiri::XML::DocumentFragment.parse(inner_xml)
+#         terms ||= []
+#         corpname.children.each do |child|
+#             if child.respond_to?(:name) && child.name == 'term'
+#                 term = child.content.strip
+#                 term_type = child['type']
+#                 terms << {'term' => term, 'term_type' => term_type, 'vocabulary' => '/vocabularies/1'}
+#             end
+#         end
+#
+#         if att('role')
+#             relator = att('role')
+#         elsif att('encodinganalog') == '710'
+#             relator = 'ctb'
+#         else
+#             relator = nil
+#         end
+#
+#         if att('ref')
+#             set ancestor(:resource, :archival_object), :linked_agents, {'ref' => att('ref'), 'role' => 'subject', 'terms' => terms, 'relator' => relator}
+#         else
+#             make_corp_template(:role => 'subject')
+#         end
+#     end
+#
+#     with 'origination/famname' do
+#         if att('ref')
+#             set ancestor(:resource, :archival_object), :linked_agents, {'ref' => att('ref'), 'role' => 'creator'}
+#         else
+#             make_family_template(:role => 'creator')
+#         end
+#     end
+#
+#     with 'controlaccess/famname' do
+#         famname = Nokogiri::XML::DocumentFragment.parse(inner_xml)
+#         terms ||= []
+#         famname.children.each do |child|
+#             if child.respond_to?(:name) && child.name == 'term'
+#                 term = child.content.strip
+#                 term_type = child['type']
+#                 terms << {'term' => term, 'term_type' => term_type, 'vocabulary' => '/vocabularies/1'}
+#             end
+#         end
+#
+#         if att('role')
+#             relator = att('role')
+#         elsif att('encodinganalog') == '700'
+#             relator = 'ctb'
+#         else
+#             relator = nil
+#         end
+#
+#         if att('ref')
+#             set ancestor(:resource, :archival_object), :linked_agents, {'ref' => att('ref'), 'role' => 'subject', 'terms' => terms, 'relator' => relator}
+#         else
+#             make_family_template(:role => 'subject')
+#         end
+#     end
+#
+#     with 'origination/persname' do
+#         if att('ref')
+#             set ancestor(:resource, :archival_object), :linked_agents, {'ref' => att('ref'), 'role' => 'creator'}
+#         else
+#             make_person_template(:role => 'creator')
+#         end
+#     end
+#
+#     with 'controlaccess/persname' do
+#         persname = Nokogiri::XML::DocumentFragment.parse(inner_xml)
+#         terms ||= []
+#         persname.children.each do |child|
+#             if child.respond_to?(:name) && child.name == 'term'
+#                 term = child.content.strip
+#                 term_type = child['type']
+#                 terms << {'term' => term, 'term_type' => term_type, 'vocabulary' => '/vocabularies/1'}
+#             end
+#         end
+#
+#         if att('role')
+#             relator = att('role')
+#         elsif att('encodinganalog') == '700'
+#             relator = 'ctb'
+#         else
+#             relator = nil
+#         end
+#
+#         if att('ref')
+#             set ancestor(:resource, :archival_object), :linked_agents, {'ref' => att('ref'), 'role' => 'subject', 'terms' => terms, 'relator' => relator}
+#         else
+#             make_person_template(:role => 'subject')
+#         end
+#     end
+#
+# # END CUSTOM SUBJECT AND AGENT IMPORTS
+#
+#
+# # BEGIN PHYSDESC CUSTOMIZATIONS
+#
+# # The stock EAD importer doesn't import <physfacet> and <dimensions> tags into extent objects; instead making them notes
+# # This is a corrected version
+#
+# # first, some methods for generating note objects
+#
+# def make_single_note(note_name, tag, tag_name="")
+#   content = tag.inner_text
+#   if !tag_name.empty?
+#     content = tag_name + ": " + content
+#   end
+#   make :note_singlepart, {
+#     :type => note_name,
+#     :persistent_id => att('id'),
+#     :publish => true,
+#     :content => format_content( content.sub(/<head>.?<\/head>/, '').strip)
+#   } do |note|
+#     set ancestor(:resource, :archival_object), :notes, note
+#   end
+# end
+#
+# def make_nested_note(note_name, tag)
+#   content = tag.inner_text
+#
+#   make :note_multipart, {
+#     :type => note_name,
+#     :persistent_id => att('id'),
+#     :publish => true,
+#     :subnotes => {
+#       'jsonmodel_type' => 'note_text',
+#       'content' => format_content( content )
+#     }
+#   } do |note|
+#     set ancestor(:resource, :archival_object), :notes, note
+#   end
+# end
+#
+# with 'physdesc' do
+#   next if context == :note_orderedlist # skip these
+#   physdesc = Nokogiri::XML::DocumentFragment.parse(inner_xml)
+#
+#   extent_number_and_type = nil
+#
+#   dimensions = []
+#   physfacets = []
+#   container_summaries = []
+#   other_extent_data = []
+#
+#   container_summary_texts = []
+#   dimensions_texts = []
+#   physfacet_texts = []
+#
+#   # If there is already a portion specified, use it
+#   portion = att('altrender') || 'whole'
+#
+#       # Special case: if the physdesc is just a plain string with no child elements, treat its contents as a physdesc note
+#   if physdesc.children.length == 1 && physdesc.children[0].name == 'text'
+#         container_summaries << physdesc
+#   else
+#       # Otherwise, attempt to parse out an extent record from the child elements.
+#     physdesc.children.each do |child|
+#       # "extent" can have one of two kinds of semantic meanings: either a true extent with number and type,
+#       # or a container summary. Disambiguation is done through a regex.
+#       if child.name == 'extent'
+#         child_content = child.content.strip
+#         if extent_number_and_type.nil? && child_content =~ /^([0-9\.]+)+\s+(.*)$/
+#           extent_number_and_type = {:number => $1, :extent_type => $2}
+#         else
+#           container_summaries << child
+#           container_summary_texts << child.content.strip
+#         end
+#
+#       elsif child.name == 'physfacet'
+#         physfacets << child
+#         physfacet_texts << child.content.strip
+#
+#       elsif child.name == 'dimensions'
+#         dimensions << child
+#         dimensions_texts << child.content.strip
+#
+#       elsif child.name != 'text'
+#         other_extent_data << child
+#       end
+#     end
+#   end
+#
+#   # only make an extent if we got a number and type, otherwise put all physdesc contents into a note
+#   if extent_number_and_type
+#     make :extent, {
+#       :number => $1,
+#       :extent_type => $2,
+#       :portion => portion,
+#       :container_summary => container_summary_texts.join('; '),
+#       :physical_details => physfacet_texts.join('; '),
+#       :dimensions => dimensions_texts.join('; ')
+#     } do |extent|
+#       set ancestor(:resource, :archival_object), :extents, extent
+#     end
+#
+#   # there's no true extent; split up the rest into individual notes
+#   else
+#     container_summaries.each do |summary|
+#       make_single_note("physdesc", summary)
+#     end
+#
+#     physfacets.each do |physfacet|
+#       make_single_note("physfacet", physfacet)
+#     end
+#     #
+#     dimensions.each do |dimension|
+#       make_nested_note("dimensions", dimension)
+#     end
+#   end
+#
+#   other_extent_data.each do |unknown_tag|
+#     make_single_note("physdesc", unknown_tag, unknown_tag.name)
+#   end
+#
+# end
+#
 
 # END PHYSDESC CUSTOMIZATIONS
 
