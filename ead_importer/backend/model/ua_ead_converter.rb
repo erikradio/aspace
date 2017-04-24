@@ -72,13 +72,13 @@ class UAEADConverter < EADConverter
     #   end
     # end
 
-    with 'titleproper' do |node.text|
+    with 'titleproper' do
       type = att('type')
       case type
       when 'filing'
         set :finding_aid_filing_title, format_content( inner_xml )
       # else
-      # set :finding_aid_title, format_content( inner_xml )
+      #   set :finding_aid_title, format_content( inner_xml )
       end
     end
 
