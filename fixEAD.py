@@ -17,9 +17,44 @@ def removeColons(root):
 def updateHeader(root):
     header=root.find('eadheader')
     header.set('findaidstatus','complete')
-    
+
     return root
 
+def updateAttributes(root):
+
+    repoCode=root.find('archdesc/did/unitid')
+    repoCode.set('repositorycode','US-azu')
+    repoCode.set('countrycody','us')
+    # print(repoCode.attrib)
+
+    for repoDate in root.iter('unitdate'):
+        date=repoDate.attrib
+        if date == '':
+            date.attrib.pop('normal', None)
+        if date == 'NaN':
+            date.attrib.pop('normal', None)
+        print(date)
+    # print(repoDate)
+
+    archDesc=root.find('archdesc')
+    archDesc.attrib.pop('relatedencoding', None)
+    archDesc.set('encodinganalog','351$c')
+
+    #remove all id attrib
+
+
+
+    for el in root.iter('*'):
+        fack=el.attrib
+        for x in fack:
+            attrText = fack[x]
+            if attrText == '5441':
+                fack[x] = attrText.replace('5441','544')
+            if attrText == '544$1':
+                fack[x] = attrText.replace('544$1','544')
+
+
+    return root
 
 
 
@@ -35,6 +70,7 @@ def main():
     updateHeader(root)
 
     removeColons(root)
+    updateAttributes(root)
 
     # print(tree)
     tree.write(outfile_path)
