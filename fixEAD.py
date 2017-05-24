@@ -33,7 +33,9 @@ def updateAttributes(root):
             date.attrib.pop('normal', None)
         if date == 'NaN':
             date.attrib.pop('normal', None)
-        print(date)
+        if date == 'AzU':
+            date.attrib.pop('normal', None)
+        # print(date)
     # print(repoDate)
 
     archDesc=root.find('archdesc')
@@ -41,6 +43,17 @@ def updateAttributes(root):
     archDesc.set('encodinganalog','351$c')
 
     #remove all id attrib
+
+    for x in root.iter('*'):
+        name=x.get('id')
+        if name is not None:
+            x.attrib.pop('id', None)
+            
+
+
+
+
+
 
 
 
