@@ -1,6 +1,9 @@
 import sys
 import xml.etree.ElementTree as ET
+from xml.etree.ElementTree import Element, SubElement, Comment, tostring
 import copy
+from datetime import datetime
+
 
 
 def removeColons(root):
@@ -15,9 +18,22 @@ def removeColons(root):
     return root
 
 def updateHeader(root):
+
+    time = datetime.now().strftime('%Y-%m-%d')
+
+
     header=root.find('eadheader')
     header.set('findaidstatus','complete')
 
+    revision=SubElement(header, 'revisiondesc')
+    change=SubElement(revision,'change')
+    revDate=SubElement(change,'date')
+    revDate.set('normal', time)
+    revDate.text = time
+    item = SubElement(change, 'item')
+    item.text = 'This finding aid was updated to be more closely aligned with LC specifications using a python script created by Erik Radio.'
+
+    #fix EADid next
     return root
 
 def updateAttributes(root):
@@ -48,14 +64,6 @@ def updateAttributes(root):
         name=x.get('id')
         if name is not None:
             x.attrib.pop('id', None)
-            
-
-
-
-
-
-
-
 
     for el in root.iter('*'):
         fack=el.attrib
@@ -68,6 +76,7 @@ def updateAttributes(root):
 
 
     return root
+
 
 
 
