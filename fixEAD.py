@@ -17,14 +17,13 @@ def removeColons(root):
 
     return root
 
-def updateHeader(root):
+def updateValues(root):
+    infile_path = sys.argv[1]
 
     time = datetime.now().strftime('%Y-%m-%d')
-
-
+    #fix eadheader
     header=root.find('eadheader')
     header.set('findaidstatus','complete')
-
     revision=SubElement(header, 'revisiondesc')
     change=SubElement(revision,'change')
     revDate=SubElement(change,'date')
@@ -33,7 +32,22 @@ def updateHeader(root):
     item = SubElement(change, 'item')
     item.text = 'This finding aid was updated to be more closely aligned with LC specifications using a python script created by Erik Radio.'
 
-    #fix EADid next
+    #fix EADid
+    EADid=header.find('eadid')
+    EADid.text=infile_path.strip('.xml')
+
+    #langmaterial
+    langusage = header.find('profiledesc/langusage/language')
+    langusage.set('langcode','eng')
+
+    #date
+    pubDate = header.find('filedesc/publicationstmt/date')
+    x=pubDate.text
+    pubDate=pubDate.replace('&#169;','')
+
+    print(y)
+
+
     return root
 
 def updateAttributes(root):
@@ -77,11 +91,6 @@ def updateAttributes(root):
 
     return root
 
-
-
-
-
-
 def main():
     infile_path = sys.argv[1]
     outfile_path = 'rev_'+sys.argv[1]
@@ -89,7 +98,7 @@ def main():
     tree=ET.parse(infile_path)
     root=tree.getroot()
 
-    updateHeader(root)
+    updateValues(root)
 
     removeColons(root)
     updateAttributes(root)
