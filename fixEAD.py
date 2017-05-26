@@ -1,4 +1,5 @@
-import sys
+# -*- coding: utf-8 -*-
+import sys, re
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import Element, SubElement, Comment, tostring
 import copy
@@ -33,7 +34,7 @@ def updateValues(root):
     item.text = 'This finding aid was updated to be more closely aligned with LC specifications using a python script created by Erik Radio.'
 
     #fix EADid
-    EADid=header.find('eadid')
+    EADid = header.find('eadid')
     EADid.text=infile_path.strip('.xml')
 
     #langmaterial
@@ -41,14 +42,41 @@ def updateValues(root):
     langusage.set('langcode','eng')
 
     #date
-    pubDate = header.find('filedesc/publicationstmt/date')
-    x=pubDate.text
-    pubDate=pubDate.replace('&#169;','')
 
-    print(y)
+    pubDate = header.find('filedesc/publicationstmt/date')
+    pubDate.text = pubDate.text.replace(u"© ","")
+
+    #control access to remove list -- START HERE
+    conAcc = root.find('archdesc/controlaccess')
+    subj=[]
+    for thing in conAcc.findall('list/item/*'):
+        subj.append(thing)
+        for y in conAcc.findall('list'):
+            conAcc.remove(y)
+            for x in subj:
+
+                newsubj = SubElement(conAcc,x.tag)
+                newsubj.text=x.text
+                print(newsubj.tag)
+
+
 
 
     return root
+
+#to remove parent but not child
+# def iterparent(tree):
+#     for parent in tree.getiterator():
+#         for child in parent:
+#             yield parent, child
+#
+# tree = etree.fromstring(data)
+# for parent, child in iterparent(tree):
+#     if child.tag == "letter" and child.attrib.get('name') == "E":
+#         parent.remove(child)
+#         parent.extend(child)
+#
+# print etree.tostring(tree)
 
 def updateAttributes(root):
 
@@ -90,6 +118,11 @@ def updateAttributes(root):
 
 
     return root
+
+
+
+
+
 
 def main():
     infile_path = sys.argv[1]
