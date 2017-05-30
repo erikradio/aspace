@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys, re
+import sys, re, uuid
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import Element, SubElement, Comment, tostring
 import copy
@@ -37,48 +37,36 @@ def updateValues(root):
     EADid = header.find('eadid')
     EADid.text=infile_path.strip('.xml')
 
-    #langmaterial
-    langusage = header.find('profiledesc/langusage/language')
-    langusage.set('langcode','eng')
+
+
+
 
     #date
 
     pubDate = header.find('filedesc/publicationstmt/date')
     pubDate.text = pubDate.text.replace(u"© ","")
 
-    #control access to remove list -- START HERE
+    #control access to remove list
     conAcc = root.find('archdesc/controlaccess')
     subj=[]
     for thing in conAcc.findall('list/item/*'):
         subj.append(thing)
+        for head in conAcc.findall('head'):
+            # print(head.tag)
+            conAcc.remove(head)
         for y in conAcc.findall('list'):
             conAcc.remove(y)
-            for x in subj:
 
-                newsubj = SubElement(conAcc,x.tag)
-                newsubj.text=x.text
-                print(newsubj.tag)
+    for x in subj:
 
-
-
+        newsubj = SubElement(conAcc,x.tag)
+        newsubj.text=x.text
 
     return root
 
-#to remove parent but not child
-# def iterparent(tree):
-#     for parent in tree.getiterator():
-#         for child in parent:
-#             yield parent, child
-#
-# tree = etree.fromstring(data)
-# for parent, child in iterparent(tree):
-#     if child.tag == "letter" and child.attrib.get('name') == "E":
-#         parent.remove(child)
-#         parent.extend(child)
-#
-# print etree.tostring(tree)
 
 def updateAttributes(root):
+    header=root.find('eadheader')
 
     repoCode=root.find('archdesc/did/unitid')
     repoCode.set('repositorycode','US-azu')
@@ -97,8 +85,19 @@ def updateAttributes(root):
     # print(repoDate)
 
     archDesc=root.find('archdesc')
+    # print(archDesc)
     archDesc.attrib.pop('relatedencoding', None)
     archDesc.set('encodinganalog','351$c')
+
+    #langmaterial
+    langusage = header.find('profiledesc/langusage/language')
+    langusage.set('langcode','eng')
+
+
+    langusage2 = root.find('archdesc/did/langmaterial/language')
+    # print(langusage2)
+    if langusage2 is not None:
+        langusage2.attrib.pop('scriptcode', None)
 
     #remove all id attrib
 
@@ -116,11 +115,19 @@ def updateAttributes(root):
             if attrText == '544$1':
                 fack[x] = attrText.replace('544$1','544')
 
+    #add random ids to containers -- START HERE
+    dsc = root.find('.//dsc')
+
+    for c01 in dsc.iter('c01'):
+        randomID=uuid.uuid4()
+        # print(randomID)
+        c01.set('id',randomID)
+
+        # print(c01.attrib)
+
+
 
     return root
-
-
-
 
 
 
@@ -128,13 +135,14 @@ def main():
     infile_path = sys.argv[1]
     outfile_path = 'rev_'+sys.argv[1]
 
+
+
     tree=ET.parse(infile_path)
     root=tree.getroot()
-
     updateValues(root)
-
     removeColons(root)
     updateAttributes(root)
+
 
     # print(tree)
     tree.write(outfile_path)
