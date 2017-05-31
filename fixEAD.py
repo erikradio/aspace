@@ -8,7 +8,8 @@ from datetime import datetime
 
 
 def removeColons(root):
-    for el in root.iter('*'):
+    ns = {'ead':'urn:isbn:1-931666-22-9'}
+    for el in root.iter('ead:*'):
         fack=el.attrib
         for x in fack:
             attrText = fack[x]
@@ -19,22 +20,28 @@ def removeColons(root):
     return root
 
 def updateValues(root):
+    ns = {'ead':'urn:isbn:1-931666-22-9'}
     infile_path = sys.argv[1]
 
     time = datetime.now().strftime('%Y-%m-%d')
     #fix eadheader
-    header=root.find('eadheader')
+
+    header=root.find('ead:eadheader',ns)
+
     header.set('findaidstatus','complete')
-    revision=SubElement(header, 'revisiondesc')
-    change=SubElement(revision,'change')
-    revDate=SubElement(change,'date')
+    # print(header.attrib)
+
+
+    revision=SubElement(header, 'ead:revisiondesc')
+    change=SubElement(revision,'ead:change')
+    revDate=SubElement(change,'ead:date')
     revDate.set('normal', time)
     revDate.text = time
-    item = SubElement(change, 'item')
+    item = SubElement(change, 'ead:item')
     item.text = 'This finding aid was updated to be more closely aligned with LC specifications using a python script created by Erik Radio.'
 
     #fix EADid
-    EADid = header.find('eadid')
+    EADid = header.find('ead:eadid',ns)
     EADid.text=infile_path.strip('.xml')
 
 
@@ -43,18 +50,20 @@ def updateValues(root):
 
     #date
 
-    pubDate = header.find('filedesc/publicationstmt/date')
+    pubDate = header.find('ead:filedesc/ead:publicationstmt/ead:date',ns)
     pubDate.text = pubDate.text.replace(u"© ","")
 
     #control access to remove list
-    conAcc = root.find('archdesc/controlaccess')
+    conAcc = root.find('ead:archdesc/ead:controlaccess',ns)
+    # print(conAcc)
     subj=[]
-    for thing in conAcc.findall('list/item/*'):
+    for thing in conAcc.findall('ead:list/ead:item/*',ns):
         subj.append(thing)
-        for head in conAcc.findall('head'):
-            # print(head.tag)
+        # print(subj)
+        for head in conAcc.findall('ead:head',ns):
+            print(head.tag)
             conAcc.remove(head)
-        for y in conAcc.findall('list'):
+        for y in conAcc.findall('ead:list',ns):
             conAcc.remove(y)
 
     for x in subj:
@@ -66,14 +75,15 @@ def updateValues(root):
 
 
 def updateAttributes(root):
-    header=root.find('eadheader')
+    ns = {'ead':'urn:isbn:1-931666-22-9'}
+    header=root.find('ead:eadheader',ns)
 
-    repoCode=root.find('archdesc/did/unitid')
+    repoCode=root.find('ead:archdesc/ead:did/ead:unitid',ns)
     repoCode.set('repositorycode','US-azu')
-    repoCode.set('countrycody','us')
+    repoCode.set('countrycode','US')
     # print(repoCode.attrib)
 
-    for repoDate in root.iter('unitdate'):
+    for repoDate in root.iter('ead:unitdate'):
         date=repoDate.attrib
         if date == '':
             date.attrib.pop('normal', None)
@@ -84,17 +94,17 @@ def updateAttributes(root):
         # print(date)
     # print(repoDate)
 
-    archDesc=root.find('archdesc')
+    archDesc=root.find('ead:archdesc',ns)
     # print(archDesc)
     archDesc.attrib.pop('relatedencoding', None)
     archDesc.set('encodinganalog','351$c')
 
     #langmaterial
-    langusage = header.find('profiledesc/langusage/language')
+    langusage = header.find('ead:profiledesc/ead:langusage/ead:language',ns)
     langusage.set('langcode','eng')
 
 
-    langusage2 = root.find('archdesc/did/langmaterial/language')
+    langusage2 = root.find('ead:archdesc/ead:did/ead:langmaterial/ead:language',ns)
     # print(langusage2)
     if langusage2 is not None:
         langusage2.attrib.pop('scriptcode', None)
@@ -116,13 +126,13 @@ def updateAttributes(root):
                 fack[x] = attrText.replace('544$1','544')
 
     #add random ids to containers
-    alldid = root.findall('.//did')
+    alldid = root.findall('.//ead:did',ns)
     for did in alldid:
-        for elem in did.findall('./container[1]'):
+        for elem in did.findall('./ead:container[1]',ns):
             randomID = uuid.uuid4()
             elem.set('id',str(randomID))
             newID=elem.get('id')
-            for thing in did.findall('./container'):
+            for thing in did.findall('./ead:container',ns):
                 if thing.get('id') == None:
                     thing.set('parent',newID)
 
@@ -134,17 +144,19 @@ def main():
     infile_path = sys.argv[1]
     outfile_path = 'rev_'+sys.argv[1]
 
-
+    ns = {'ead':'urn:isbn:1-931666-22-9'}
+    ET.register_namespace('ead',"urn:isbn:1-931666-22-9")
 
     tree=ET.parse(infile_path)
     root=tree.getroot()
+    # print(root)
     updateValues(root)
     removeColons(root)
     updateAttributes(root)
 
 
     # print(tree)
-    tree.write(outfile_path)
+    tree.write(outfile_path, xml_declaration=True,encoding='utf-8',method='xml')
 
 # make this a safe-ish cli script
 if __name__ == '__main__':
