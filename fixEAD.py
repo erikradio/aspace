@@ -115,17 +115,16 @@ def updateAttributes(root):
             if attrText == '544$1':
                 fack[x] = attrText.replace('544$1','544')
 
-    #add random ids to containers -- START HERE
-    dsc = root.find('.//dsc')
-
-    for c01 in dsc.iter('c01'):
-        randomID=uuid.uuid4()
-        # print(randomID)
-        c01.set('id',randomID)
-
-        # print(c01.attrib)
-
-
+    #add random ids to containers
+    alldid = root.findall('.//did')
+    for did in alldid:
+        for elem in did.findall('./container[1]'):
+            randomID = uuid.uuid4()
+            elem.set('id',str(randomID))
+            newID=elem.get('id')
+            for thing in did.findall('./container'):
+                if thing.get('id') == None:
+                    thing.set('parent',newID)
 
     return root
 
