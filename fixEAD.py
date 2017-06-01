@@ -32,12 +32,12 @@ def updateValues(root):
     # print(header.attrib)
 
 
-    revision=SubElement(header, 'ead:revisiondesc')
-    change=SubElement(revision,'ead:change')
-    revDate=SubElement(change,'ead:date')
+    revision=SubElement(header, 'revisiondesc')
+    change=SubElement(revision,'change')
+    revDate=SubElement(change,'date')
     revDate.set('normal', time)
     revDate.text = time
-    item = SubElement(change, 'ead:item')
+    item = SubElement(change, 'item')
     item.text = 'This finding aid was updated to be more closely aligned with LC specifications using a python script created by Erik Radio.'
 
     #fix EADid
@@ -145,7 +145,7 @@ def main():
     outfile_path = 'rev_'+sys.argv[1]
 
     ns = {'ead':'urn:isbn:1-931666-22-9'}
-    ET.register_namespace('ead',"urn:isbn:1-931666-22-9")
+    ET.register_namespace('',"urn:isbn:1-931666-22-9")
 
     tree=ET.parse(infile_path)
     root=tree.getroot()
