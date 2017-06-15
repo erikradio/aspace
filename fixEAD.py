@@ -38,7 +38,7 @@ def updateValues(root):
     revDate.set('normal', time)
     revDate.text = time
     item = SubElement(change, 'item')
-    item.text = 'This finding aid was updated to be more closely aligned with LC specifications using a python script created by Erik Radio.'
+    item.text = 'This finding aid was updated in alignment with LC EAD 2.0 specifications using a python script created by Erik Radio.'
 
     #fix EADid
     EADid = header.find('ead:eadid',ns)
