@@ -21,13 +21,20 @@ def removeColons(root):
 
 def updateValues(root):
     ns = {'ead':'urn:isbn:1-931666-22-9'}
+
+
+
+
+    # print(ns)
+
+
     infile_path = sys.argv[1]
 
     time = datetime.now().strftime('%Y-%m-%d')
     #fix eadheader
 
-    header=root.find('ead:eadheader',ns)
-
+    header=root.find('ead:eadheader', ns)
+    # print(header.tag)
     header.set('findaidstatus','complete')
     # print(header.attrib)
 
@@ -52,6 +59,7 @@ def updateValues(root):
 
     pubDate = header.find('ead:filedesc/ead:publicationstmt/ead:date',ns)
     pubDate.text = pubDate.text.replace(u"© ","")
+    pubDate.text = pubDate.text.replace("; ","")
 
     #control access to remove list
     conAcc = root.find('ead:archdesc/ead:controlaccess',ns)
@@ -149,6 +157,10 @@ def main():
 
     tree=ET.parse(infile_path)
     root=tree.getroot()
+    # root.set('xmlns','urn:isbn:1-931666-22-9')
+    # root.set('xmlns:xsi','http://www.w3.org/2001/XMLSchema-instance')
+    # root.set('xsi:schemaLocation','urn:isbn:1-931666-22-9 https://www.loc.gov/ead/ead.xsd')
+    # root.set('relatedencoding','MARC21')
     # print(root)
     updateValues(root)
     removeColons(root)
