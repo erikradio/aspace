@@ -5,7 +5,8 @@ Created by Erik Radio, UA Libraries, 2017-09-13-->
     xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="xs" version="2.0"
     xmlns:ead="urn:isbn:1-931666-22-9">
     <xsl:output method="xml" encoding="UTF-8" indent="yes"/>
-
+    
+   
     <xsl:template match="/" exclude-result-prefixes="#all">
 
 
@@ -169,169 +170,48 @@ Created by Erik Radio, UA Libraries, 2017-09-13-->
                                 exclude-result-prefixes="#all"/>
                         </p>
                     </scopecontent>
-
-                    <xsl:copy-of select="//ead:controlaccess" copy-namespaces="no" exclude-result-prefixes="#all"/>
-                    <dsc type="combined">
-                        <xsl:copy-of select="//ead:dsc/*" copy-namespaces="no" exclude-result-prefixes="#all"/>
-                    </dsc>
+                    <controlaccess id="a12">
+                        <head>Access Terms</head>
+                        
+                           
+                           
+                          
+                           <xsl:for-each select="//ead:controlaccess/*">
+                               <list>
+                               <item>
+                            <xsl:apply-templates select="."/>
+                           </item>
+                               </list>
+                           </xsl:for-each>
+                        
+                    </controlaccess>
                     
+                    <dsc type="combined">
+                        <head>Container List</head>
+                      
+                        <!--<xsl:copy-of select="//ead:dsc/ead:c01" copy-namespaces="no"  exclude-result-prefixes="#all"/>-->
+                        <xsl:apply-templates select="//ead:dsc/*"/>
+                    </dsc>
+                   
 
                 
             </archdesc>
         </ead>
-
-
-
-
-        <!--
-                
-                <field xmlns="http://www.lunaimaging.com/xsd" type="Record ID">
-                    
-                    <xsl:value-of select="mods:recordInfo/mods:recordIdentifier"/>
-                    
-                </field>
-                
-                
-                <fieldGroup type="titleInfo">
-                    <field xmlns="http://www.lunaimaging.com/xsd" type="Title">
-                        <xsl:for-each select="mods:titleInfo[1]">
-                            
-                            <xsl:choose>
-                                <xsl:when test="count($nonsort)>0">
-                                    <xsl:value-of select="concat($nonsort,$title )"/>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <xsl:value-of select="$title"/>
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </xsl:for-each>
-                    </field>
-                    <xsl:if test="count($subtitle)>0">
-                        <field xmlns="http://www.lunaimaging.com/xsd" type="subTitle">
-                            <xsl:value-of select="$subtitle"/>
-                        </field>
-                    </xsl:if>
-                </fieldGroup>
-                
-                
-                
-                <fieldGroup xmlns="http://www.lunaimaging.com/xsd" type="name">
-                    <xsl:for-each select="mods:name">
-                        
-                        
-                        
-                        <field type="Creator">
-                            
-                            <xsl:value-of select="mods:namePart"/>
-                            
-                            
-                        </field>
-                    </xsl:for-each>
-                </fieldGroup>
-                
-                <fieldGroup xmlns="http://www.lunaimaging.com/xsd" type="Abstract_Description">
-                    <field type="Abstract">
-                        <xsl:value-of select="mods:abstract"/>
-                    </field>
-                </fieldGroup>
-                
-                
-                
-                <fieldGroup xmlns="http://www.lunaimaging.com/xsd" type="Language">
-                    
-                    <field type="Language">
-                        <xsl:choose>
-                            <xsl:when test="mods:language/mods:languageTerm[@type='code']='spa'">
-                                <xsl:value-of select="$spa"/>
-                            </xsl:when>
-                            <xsl:when test="mods:language/mods:languageTerm[@type='code']='eng'">
-                                <xsl:value-of select="$eng"/>
-                            </xsl:when>
-                            <xsl:when test="mods:language/mods:languageTerm[@type='code']='ger'">
-                                <xsl:value-of select="$ger"/>
-                            </xsl:when>
-                            <xsl:when test="mods:language/mods:languageTerm[@type='code']='fre'">
-                                <xsl:value-of select="$fre"/>
-                            </xsl:when>
-                            <xsl:when test="mods:language/mods:languageTerm[@type='code']='ita'">
-                                <xsl:value-of select="$ita"/>
-                            </xsl:when>
-                        </xsl:choose>
-                        
-                    </field>
-                </fieldGroup>
-                
-                <fieldGroup xmlns="http://www.lunaimaging.com/xsd" type="Genre">
-                    <field type="Genre">
-                        <xsl:value-of select="mods:genre"/>
-                    </field>
-                </fieldGroup>
-                
-                
-                
-                <fieldGroup xmlns="http://www.lunaimaging.com/xsd" type="originInfo">
-                    <field type="Date Issued">
-                        <xsl:value-of select="mods:originInfo/mods:dateIssued[@encoding='marc']"/>
-                    </field>
-                    <field type="Place">
-                        <xsl:choose>
-                            <xsl:when test="mods:originInfo/mods:place/mods:placeTerm[@type='code']='nq'">
-                                <xsl:value-of select="$nq"/>
-                            </xsl:when>
-                            <xsl:when test="mods:originInfo/mods:place/mods:placeTerm[@type='code']='gt'">
-                                <xsl:value-of select="$gt"/>
-                            </xsl:when>
-                            <xsl:when test="mods:originInfo/mods:place/mods:placeTerm[@type='code']='ho'">
-                                <xsl:value-of select="$ho"/>
-                            </xsl:when>
-                            <xsl:when test="mods:originInfo/mods:place/mods:placeTerm[@type='code']='es'">
-                                <xsl:value-of select="$es"/>
-                            </xsl:when>
-                            <xsl:when test="mods:originInfo/mods:place/mods:placeTerm[@type='code']='cr'">
-                                <xsl:value-of select="$cr"/>
-                            </xsl:when>
-                            <xsl:when test="mods:originInfo/mods:place/mods:placeTerm[@type='code']='py'">
-                                <xsl:value-of select="$py"/>
-                            </xsl:when>
-                            <xsl:when test="mods:originInfo/mods:place/mods:placeTerm[@type='code']='fr'">
-                                <xsl:value-of select="$fr"/>
-                            </xsl:when>
-                            <xsl:when test="mods:originInfo/mods:place/mods:placeTerm[@type='code']='mx'">
-                                <xsl:value-of select="$mx"/>
-                            </xsl:when>
-                        </xsl:choose>
-                    </field>
-                    <field type="Publisher"><xsl:value-of select="mods:originInfo/mods:publisher"/></field>
-                    <field type="Issuance"><xsl:value-of select="mods:originInfo/mods:issuance"/></field>
-                    
-                    
-                </fieldGroup>
-                
-                
-                <fieldGroup xmlns="http://www.lunaimaging.com/xsd" type="Physical_Description">
-                    <field type="Extent">
-                        <xsl:value-of select="mods:physicalDescription/mods:extent"/>
-                    </field>
-                    <field type="Form">
-                        <xsl:value-of select="mods:physicalDescription/mods:form"/>
-                    </field>
-                </fieldGroup>
-                
-                <fieldGroup xmlns="http://www.lunaimaging.com/xsd" type="Misc_Note">
-                    <field type="Note">
-                        <xsl:value-of select="mods:note"/>
-                    </field>
-                </fieldGroup>
-                
-                -->
-
-
-
-
     </xsl:template>
-
-
-
+    
+    
+    
+    <xsl:template match="*">
+        <xsl:element name="{local-name()}">
+            <xsl:apply-templates select="node()|@*"/>
+        </xsl:element>
+    </xsl:template>
+    
+    <xsl:template match="@*">
+        <xsl:attribute name="{local-name()}">
+            <xsl:value-of select="."/>
+        </xsl:attribute>
+    </xsl:template>
 
 
 
