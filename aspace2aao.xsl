@@ -21,8 +21,8 @@ Created by Erik Radio, UA Libraries, 2017-09-13-->
                 <filedesc>
                     <titlestmt>
 
-                        <titleproper encodinganalog="title">
-                            <xsl:value-of select="//ead:titleproper/text()"/>
+                        <titleproper encodinganalog="245$a">
+                            <xsl:value-of select="//ead:titleproper/text()"/>, 
 
                             <date normal="{//ead:archdesc/ead:did/ead:unitdate/@normal}" era="ce"
                                 calendar="gregorian" certainty="approximate" type="inclusive">
@@ -154,15 +154,9 @@ Created by Erik Radio, UA Libraries, 2017-09-13-->
                             <xsl:value-of select="//ead:bioghist/ead:p"/>
                         </p>
                     </bioghist>
-                    <!--<arrangement encodinganalog="351$a"> 
-                                <head>Arrangement</head>
-                                <p> <xsl:value-of select="//ead:archdesc/ead:arrangement/ead:p"/></p>
-                                <list type="ordered">
-                                <xsl:copy-of select="//ead:arrangement/ead:list/*" copy-namespaces="no"/>
-                                </list>
-                            </arrangement>-->
+                    
 
-                    <xsl:copy-of select="//ead:arrangement" copy-namespaces="no" exclude-result-prefixes="#all"/>
+                    
                     <scopecontent encodinganalog="520">
                         <head>Scope and Content Note</head>
                         <p>
@@ -170,7 +164,20 @@ Created by Erik Radio, UA Libraries, 2017-09-13-->
                                 exclude-result-prefixes="#all"/>
                         </p>
                     </scopecontent>
-                    <controlaccess id="a12">
+                
+                <arrangement> 
+                    <head>Organization</head> 
+                    <p><xsl:value-of select="//ead:arrangement/ead:p"/></p>
+                    <list>
+                        <xsl:for-each select="//ead:arrangement/ead:list/*">
+                            <xsl:apply-templates select="."></xsl:apply-templates>
+                        </xsl:for-each>
+                    </list>
+                </arrangement>
+                    
+                    
+                
+                    <controlaccess>
                         <head>Access Terms</head>
                         
                            
