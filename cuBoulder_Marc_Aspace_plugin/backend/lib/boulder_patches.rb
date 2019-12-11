@@ -175,9 +175,10 @@ class MARCModel < ASpaceExport::ExportModel
                 when 'odd', 'dimensions', 'materialspec', 'phystech', 'physfacet', 'processinfo', 'separatedmaterial'
                   ['500','a']
                   when 'accessrestrict'
-                    ['506','a']
-                  when 'scopecontent'
-                    ['520', '2', ' ', 'a']
+                    ind1 = note['publish'] ? '1' : '0'
+                    ['506', ind1, ' ', 'a']
+                  # when 'scopecontent'
+                  #   ['520', '3', ' ', 'a']
                   when 'abstract'
                     ['520', '3', ' ', 'a']
                   when 'prefercite'
@@ -186,9 +187,10 @@ class MARCModel < ASpaceExport::ExportModel
                     ind1 = note['publish'] ? '1' : '0'
                     ['541', ind1, ' ', 'a']
                   when 'relatedmaterial'
-                    ['544',ind1]
-                  when 'bioghist'
-                    ['545','a']
+                    ind1 = note['publish'] ? '1' : '0'
+                    ['544',ind1, ' ', 'a']
+                  # when 'bioghist'
+                  #     ['545',ind1,' ','a']
                   when 'custodhist'
                     ind1 = note['publish'] ? '1' : '0'
                     ['561', ind1, ' ', 'a']
@@ -238,7 +240,7 @@ class MARCModel < ASpaceExport::ExportModel
   # export dimensions into 300|c subfield
   def handle_extents(extents)
     extents.each do |ext|
-      e = ext['number'] + " #{I18n.t('enumerations.extent_extent_type.'+ext['extent_type'], :default => ext['extent_type'])}"
+      e = ext['number'] + ' '
       t =  "#{I18n.t('enumerations.extent_extent_type.'+ext['extent_type'], :default => ext['extent_type'])}"
 
       if ext['container_summary']
@@ -249,7 +251,9 @@ class MARCModel < ASpaceExport::ExportModel
         d = ext['dimensions']
       end
 
-      df!('300').with_sfs(['a', e])
+
+
+      df!('300').with_sfs(['a', e + t])
     end
   end
 end
